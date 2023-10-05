@@ -5,10 +5,12 @@ import {SPHttpClient, ISPHttpClientOptions} from "@microsoft/sp-http";
 
 export const getPgAttachments = async (context: WebPartContext) =>{
 
-    console.log("context", context)
+    // console.log("context", context);
 
     const pageUrl = document.documentURI;
-    const pageTitle = pageUrl.substring(pageUrl.lastIndexOf('/')+1, pageUrl.lastIndexOf('.aspx'));
+    const pageTitle = encodeURIComponent(pageUrl.substring(pageUrl.lastIndexOf('/')+1, pageUrl.lastIndexOf('.aspx')));
+
+    // console.log("pageTitle", pageTitle);
 
     const responseUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('siteassets/sitepages/${pageTitle}')/files`;
     const response = await context.spHttpClient.get(responseUrl, SPHttpClient.configurations.v1).then(r => r.json());
@@ -54,11 +56,13 @@ export const getOpenInBrowserLink = (context: WebPartContext, obj: any) => {
     const fileExt = obj.ServerRelativeUrl.substring(obj.ServerRelativeUrl.indexOf('.'));
     let fileUrl = obj.ServerRelativeUrl;
 
+    console.log("obj", obj);
+
     if (officeExts.indexOf(fileExt) !== -1){
         fileUrl = `${context.pageContext.web.absoluteUrl}/_layouts/15/Doc.aspx?sourcedoc=%7B${obj.UniqueId}%7D&file=${obj.Name}&action=default&mobileredirect=true`;
     }
     else {
-        fileUrl = `${context.pageContext.web.absoluteUrl}/SiteAssets/Forms/AllItems.aspx?id=${obj.ServerRelativeUrl}&parent=${obj.ServerRelativeUrl.substring(0, obj.ServerRelativeUrl.indexOf(obj.Name)-1)}`;
+        fileUrl = `${context.pageContext.web.absoluteUrl}/SiteAssets/Forms/AllItems.aspx?id=${encodeURIComponent(obj.ServerRelativeUrl)}&parent=${obj.ServerRelativeUrl.substring(0, obj.ServerRelativeUrl.indexOf(obj.Name)-1)}`;
     }
 
     return fileUrl;
